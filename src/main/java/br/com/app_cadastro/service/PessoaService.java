@@ -5,7 +5,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import br.com.app_cadastro.domain.Pessoa;
+import br.com.app_cadastro.adapter.DozerConverter;
+import br.com.app_cadastro.domain.entity.Pessoa;
+import br.com.app_cadastro.domain.vo.PessoaVO;
 import br.com.app_cadastro.exception.ResourceNotFoundException;
 import br.com.app_cadastro.repository.PessoaRepository;
 
@@ -15,18 +17,20 @@ public class PessoaService {
 	@Autowired
 	PessoaRepository repository;
 	
-	public Pessoa inserir(Pessoa pessoa) {
-		return repository.save(pessoa);
+	public PessoaVO inserir(PessoaVO pessoa) {
+		var entity = DozerConverter.parseObject(pessoa, Pessoa.class);
+		var vo = DozerConverter.parseObject(repository.save(entity), PessoaVO.class);
+		return vo;
 	}
 
-	public List<Pessoa> buscarTodos() {
-		return repository.findAll();
+	public List<PessoaVO> buscarTodos() {
+		return DozerConverter.parseListObject(repository.findAll(), PessoaVO.class);
 	}
 	
-	public Pessoa buscarPorId(Long id) {
-		Pessoa entity = repository.findById(id)
+	public PessoaVO buscarPorId(Long id) {
+		var entity = repository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Não foi encontrado registro com esse Id."));		
-		return entity;
+		return DozerConverter.parseObject(entity, PessoaVO.class);
 	}
 	
 	public void delete(Long id) {
@@ -35,15 +39,16 @@ public class PessoaService {
 		repository.delete(entity);
 	}
 	
-	public Pessoa atualizar(Pessoa pessoa) {
-		Pessoa entity = buscarPorId(pessoa.getId());
-		
+	public PessoaVO atualizar(PessoaVO pessoa) {
+		var entity = repository.findById(pessoa.getId())
+				.orElseThrow(() -> new ResourceNotFoundException("Não foi encontrado registro com esse Id."));
 		entity.setNome(pessoa.getNome());
 		entity.setSobrenome(pessoa.getSobrenome());
 		entity.setNomeSocial(pessoa.getNomeSocial());
 		entity.setEmail(pessoa.getEmail());
 		
-		return inserir(entity);
+		var vo = DozerConverter.parseObject(repository.save(entity), PessoaVO.class);
+		return vo;
 	}
 	
 	public List<Pessoa> buscarPorNome(String nome) {

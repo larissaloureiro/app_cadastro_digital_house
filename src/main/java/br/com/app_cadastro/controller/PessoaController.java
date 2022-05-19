@@ -2,7 +2,10 @@ package br.com.app_cadastro.controller;
 
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,9 +15,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.app_cadastro.domain.Pessoa;
+import br.com.app_cadastro.domain.vo.PessoaVO;
 import br.com.app_cadastro.service.PessoaService;
 
 @RestController
@@ -25,27 +29,32 @@ public class PessoaController {
 	PessoaService service;
 	
 	@RequestMapping(method=RequestMethod.GET, produces=MediaType.APPLICATION_JSON_VALUE)
-	public List<Pessoa> findAll(){
+	@ResponseStatus(value=HttpStatus.OK)
+	public List<PessoaVO> findAll(){
 		return service.buscarTodos();
 	}
 	
 	// @RequestMapping(method=RequestMethod.GET, value="/{id}", produces=MediaType.APPLICATION_JSON_VALUE) // Mesma função da linha seguinte
 	@GetMapping(value="/{id}", produces=MediaType.APPLICATION_JSON_VALUE)
-	public Pessoa findById(@PathVariable("id") Long id) {
+	@ResponseStatus(value=HttpStatus.OK)
+	public PessoaVO findById(@PathVariable("id") Long id) {
 		return service.buscarPorId(id);
 	}
 	
 	@PostMapping(consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
-	public Pessoa create(@RequestBody Pessoa pessoa) {
+	@ResponseStatus(value=HttpStatus.CREATED)
+	public PessoaVO create(@Valid @RequestBody PessoaVO pessoa) {
 		return service.inserir(pessoa);
 	}
 	
 	@PutMapping(consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
-	public Pessoa update(@RequestBody Pessoa pessoa) {
+	@ResponseStatus(value=HttpStatus.OK)
+	public PessoaVO update(@Valid @RequestBody PessoaVO pessoa) {
 		return service.atualizar(pessoa);
 	}
 	
 	@DeleteMapping(value="/{id}", produces=MediaType.APPLICATION_JSON_VALUE)
+	@ResponseStatus(value=HttpStatus.OK)
 	public void delete(@PathVariable("id") Long id) {
 		service.delete(id);
 	}
