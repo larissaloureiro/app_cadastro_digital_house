@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 import br.com.app_cadastro.adapter.DozerConverter;
 import br.com.app_cadastro.domain.entity.Pessoa;
-import br.com.app_cadastro.domain.vo.PessoaVO;
+import br.com.app_cadastro.domain.vo.v1.PessoaVO;
 import br.com.app_cadastro.exception.ResourceNotFoundException;
 import br.com.app_cadastro.repository.PessoaRepository;
 
@@ -40,7 +40,7 @@ public class PessoaService {
 	}
 	
 	public PessoaVO atualizar(PessoaVO pessoa) {
-		var entity = repository.findById(pessoa.getId())
+		var entity = repository.findById(pessoa.getKey())
 				.orElseThrow(() -> new ResourceNotFoundException("Não foi encontrado registro com esse Id."));
 		entity.setNome(pessoa.getNome());
 		entity.setSobrenome(pessoa.getSobrenome());

@@ -1,12 +1,15 @@
 package br.com.app_cadastro.controller;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 import java.util.List;
 
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,42 +21,60 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.app_cadastro.domain.vo.PessoaVO;
+import br.com.app_cadastro.domain.vo.v1.PessoaVO;
 import br.com.app_cadastro.service.PessoaService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
+@Tag(name="Pessoa Endpoint")
 @RestController
-@RequestMapping("/pessoa")
+@RequestMapping("/pessoa/v1")
 public class PessoaController {
 	
 	@Autowired
 	PessoaService service;
 	
-	@RequestMapping(method=RequestMethod.GET, produces=MediaType.APPLICATION_JSON_VALUE)
+//	@CrossOrigin("localhost:8080") //permitido o acesso
+	@RequestMapping(method=RequestMethod.GET, produces={"application/json","application/xml"})
+	@Operation(summary="Listar todas as Pessoas")
 	@ResponseStatus(value=HttpStatus.OK)
 	public List<PessoaVO> findAll(){
-		return service.buscarTodos();
+		List<PessoaVO> pessoasVO = service.buscarTodos();
+		pessoasVO.stream().forEach(p -> p.add(linkTo(methodOn(PessoaController.class).findById(p.getKey())).withSelfRel()));
+		return pessoasVO;
 	}
 	
+//	@CrossOrigin({"localhost:8080", "http://www.fgateste.com.br"}) //permitido o acesso
 	// @RequestMapping(method=RequestMethod.GET, value="/{id}", produces=MediaType.APPLICATION_JSON_VALUE) // Mesma função da linha seguinte
-	@GetMapping(value="/{id}", produces=MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value="/{id}", produces={"application/json","application/xml"})
+	@Operation(summary="Buscar Pessoa pelo Id")
 	@ResponseStatus(value=HttpStatus.OK)
 	public PessoaVO findById(@PathVariable("id") Long id) {
-		return service.buscarPorId(id);
+		PessoaVO pessoaVO = service.buscarPorId(id);
+		pessoaVO.add(linkTo(methodOn(PessoaController.class).findById(id)).withSelfRel());
+		return pessoaVO;
 	}
 	
-	@PostMapping(consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(consumes = {"application/json","application/xml"}, produces={"application/json","application/xml"})
+	@Operation(summary="Criar nova Pessoa")
 	@ResponseStatus(value=HttpStatus.CREATED)
 	public PessoaVO create(@Valid @RequestBody PessoaVO pessoa) {
-		return service.inserir(pessoa);
+		PessoaVO pessoaVO = service.inserir(pessoa);
+		pessoaVO.add(linkTo(methodOn(PessoaController.class).findById(pessoaVO.getKey())).withSelfRel());
+		return pessoaVO;
 	}
 	
-	@PutMapping(consumes=MediaType.APPLICATION_JSON_VALUE, produces=MediaType.APPLICATION_JSON_VALUE)
+	@PutMapping(consumes = {"application/json","application/xml"}, produces={"application/json","application/xml"})
+	@Operation(summary="Atualizar Pessoa")
 	@ResponseStatus(value=HttpStatus.OK)
 	public PessoaVO update(@Valid @RequestBody PessoaVO pessoa) {
-		return service.atualizar(pessoa);
+		PessoaVO pessoaVO = service.atualizar(pessoa);
+		pessoaVO.add(linkTo(methodOn(PessoaController.class).findById(pessoaVO.getKey())).withSelfRel());
+		return pessoaVO;
 	}
 	
-	@DeleteMapping(value="/{id}", produces=MediaType.APPLICATION_JSON_VALUE)
+	@DeleteMapping(value="/{id}", produces={"application/json","application/xml"})
+	@Operation(summary="Apagar Pessoa")
 	@ResponseStatus(value=HttpStatus.OK)
 	public void delete(@PathVariable("id") Long id) {
 		service.delete(id);
